@@ -3,8 +3,11 @@
 int main() {
     InitWindow(800, 450, "Space Game");
     double x=0;
-    int y = 225;
-    double time = 0;
+    double y = 225;
+    float time;
+    double t=0;
+    double v=0;
+    double a=20;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -12,9 +15,15 @@ int main() {
         ClearBackground(LIGHTGRAY);
         
         DrawCircle(x, y, 20, RED);
-        time+=0.001;
-        x = x + 0.05*time;
-
+        time = GetFrameTime(); 
+        v = v + a*time;
+        t += time;
+        x = x + v*time;
+        if(x >= 800){
+            v = -v;
+        }
+        
+        
         EndDrawing();
         
     }
