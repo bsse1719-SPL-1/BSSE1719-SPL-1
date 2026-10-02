@@ -1,0 +1,152 @@
+Git Pull
+Last Updated : 9 May, 2026
+
+Git pull is a command which is used to fetch and integrate the changes which are present in the remote repository to the local repository.
+
+    Git pull is a combination of git fetch and git merge.
+    It is used to update the local branch with changes from the remote repository branch.
+    Ensures that all developers have the latest code on their local machines.
+    Allows developers to work with newly updated code without conflicts.
+
+Syntax
+
+git pull [remote-name] [branch-name]
+
+pull_request
+Git Pull
+Workflow of Git Pull
+
+    Illustrates the main Pull Request workflow.
+    Shows notifications sent to team members.
+    Highlights discussion and code review.
+    Indicates follow-up commits before merging.
+    Explains iterative collaboration prior to final merge.
+
+Working of Git Pull
+
+Git Pull is a command used to update the local version of a repository from a remote repository. It is a mixture of two other commands:
+
+    git fetch
+    git merge
+
+    Stage 1: git pull runs git fetch for the current branch (HEAD) to download changes.
+    Stage 2: It performs a merge, creating a new merge commit and updating HEAD.
+
+Example: If a teammate adds New.txt to the remote, git pull fetches and merges it into your local repository.
+[Click to enlarge]
+Git Pull
+
+    A new file (crio.txt) is created and committed locally.
+    Push is attempted to the remote repository.
+    Git blocks the push due to missing remote updates.
+    Remote repository has commits not present locally.
+    Local branch must be updated before pushing.
+
+[Click to enlarge]
+Git Pull
+[Click to enlarge]
+Git Pull
+
+    git pull is used to fetch and merge changes from the remote repository.
+    It updates the local repository with missing remote commits.
+    origin refers to the default remote repository.
+    Use main (not master) as the branch: git pull origin main.
+    After updating locally, changes can be pushed successfully.
+
+[Click to enlarge] [Click to enlarge]
+Git Pull and Syncing
+
+Synchronizes the local repository with the remote repository by updating changes.
+
+    Updates the local repository with remote changes.
+    Maintains sync between local and remote repositories.
+    Git fetch: Retrieves changes from the remote without merging.
+    Git merge: Integrates fetched changes into the local branch.
+
+Pulling via Rebase
+
+If you want to maintain the your commits neat and linear order then you can use the Pulling via Rebase method follow the steps mentioned below.
+
+Step 1: Lets consider your having the local commits with the names as
+
+    A---B---C
+
+Step 2: Know fetch the changes that you want from the remote repository by using the following command. Fetch the changes form the remote origin.
+
+git fetch origin main
+
+Step 3: Pull changes via rebase by using the following command.
+
+git pull --rebase origin main
+
+Step 4: After completion of the git rebase.
+
+Here the A--B--C are the commits which are available in the local repository and D---E---F are the changes form the remote repository. Know your local changes are on the top of the fetched changes.
+
+    A'--B'--C' (rebasing your changes)
+
+                 \
+
+                  D---E---F (remote branch)
+
+Git Pull Examples
+
+Example 1: To pull from the default remote and current branch
+
+git pull
+
+Example 2: Pulling From a Specific Remote and Branch
+
+git pull <remote-name> <branch-name>
+
+Example 3: Pulling and Rebasing.
+
+git pull --rebase
+
+Git Pull on Remotes
+
+A shorthand command that fetches updates from a remote repository and integrates them into the local branch.
+
+    Combines git fetch with git merge (or rebase).
+    Retrieves the latest remote branch changes.
+    Updates the local repository automatically.
+
+git pull
+
+Git Pull Vs Git Fetch
+
+Git Pull
+	
+
+Git Fetch
+
+Git pull is the combination of two commands git fetch and git merge.
+	
+
+Git fetch command will fetch the remote repository to the local machine.
+
+It will fetch the changes and merges with the repository.
+	
+
+It will only fetch the branch without any merge operation.
+
+A more efficient method for updating your local branch is to use git pull.
+	
+
+Git fetch is frequently used as a first step before using 'git merge' to combine updates.
+Suggested Quiz
+
+What does the git pull command do?
+
+    A
+
+    Uploads your commits to the remote repository
+    B
+
+    Fetches and merges changes from the remote repository into your local branch
+    C
+
+    Deletes outdated commits from the remote
+    D
+
+    Only fetches changes without integrating them
