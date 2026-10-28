@@ -88,7 +88,7 @@ int main() {
 
         // ADDED: Animated GAME OVER alert
         if (gameOver) {
-            float pulse = sinf((float)GetTime() * 5.0f);
+            float pulse = sinf((float)GetTime() * 5.0f);   //the sinf func oscillates between -1 and 1
 
             int fontSize = 45 + (int)(8 * (1.0f + pulse));
             Color alertColor = pulse > 0 ? RED : ORANGE;
