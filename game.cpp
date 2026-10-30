@@ -2,19 +2,62 @@
 #include "raylib.h"
 #include <math.h>
 
+
+
+void DrawSpaceship(Vector2 position, float size)
+{
+    // Main body: points to the right
+    DrawTriangle(
+        {position.x + size, position.y},
+        {position.x - size * 0.7f, position.y - size * 0.5f},
+        {position.x - size * 0.7f, position.y + size * 0.5f},
+        LIGHTGRAY
+    );
+
+    // Upper wing
+    DrawTriangle(
+        {position.x - size * 0.2f, position.y - size * 0.3f},
+        {position.x - size * 0.8f, position.y - size},
+        {position.x - size * 0.6f, position.y},
+        BLUE
+    );
+
+    // Lower wing
+    DrawTriangle(
+        {position.x - size * 0.2f, position.y + size * 0.3f},
+        {position.x - size * 0.8f, position.y + size},
+        {position.x - size * 0.6f, position.y},
+        BLUE
+    );
+}
+
+
+
+
+
+
+
 int main() {
     const int screenWidth = 1400;
     const int screenHeight = 800;
 
-    InitWindow(screenWidth, screenHeight, "Space Gravity Game");
-    SetTargetFPS(60);
+    InitWindow(screenWidth, screenHeight, "Space Gravity Game");  // Init Window creates the actual window with a title
+    SetTargetFPS(60);  
 
     // Starting point and moving object
     Vector2 start = {100, 400};
     Vector2 position = start;
-    Vector2 velocity = {60, 0};
-
+    Vector2 velocity = {0, 0};
+    Vector2 size = {20.0f, 15.0f};
     float objectRadius = 10.0f;
+    float health = 100.0f;
+    float maxHealth = 100.0f;
+
+    float fuel = 100.0f;
+    float maxFuel = 100.0f;
+
+    float fuelConsumption = 25.0f;
+    float fuelRegeneration = 12.0f;
 
     // Destination
     Vector2 destination = {1300, 400};
@@ -40,37 +83,66 @@ int main() {
         40, 55, 45, 50, 60, 40
     };
 
-    float gravityStrength = 180000.0f;
+    float gravityStrength = 1800000.0f;           //G
 
     bool gameOver = false;
     bool destinationReached = false;
+    bool outsideMap = false;
     float playerAcceleration = 250.0f;
 
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
         // Physics runs only while the game is active
-        if (!gameOver && !destinationReached) {
-            // Player controls
-if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) {
-    velocity.y -= playerAcceleration * dt;
-}
+        if (!gameOver && !destinationReached && !outsideMap) {
 
-if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) {
-    velocity.y += playerAcceleration * dt;
-}
 
-if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
-    velocity.x -= playerAcceleration * dt;
-}
 
-if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
-    velocity.x += playerAcceleration * dt;
-}
+        // Player controls
+
+        bool accelerating = false;
+
+        if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D) ||
+            IsKeyDown(KEY_LEFT)  || IsKeyDown(KEY_A) ||
+            IsKeyDown(KEY_UP)    || IsKeyDown(KEY_W) ||
+            IsKeyDown(KEY_DOWN)  || IsKeyDown(KEY_S))
+        {
+            accelerating = true;
+        }
+
+        if (accelerating && fuel > 0.0f)
+        {
+            if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+                velocity.x += playerAcceleration * dt;
+
+            if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+                velocity.x -= playerAcceleration * dt;
+
+            if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
+                velocity.y += playerAcceleration * dt;
+
+            if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
+                velocity.y -= playerAcceleration * dt;
+
+            fuel -= fuelConsumption * dt;
+
+            if (fuel < 0.0f)
+                fuel = 0.0f;
+        }
+        else
+        {
+            fuel += fuelRegeneration * dt;
+
+            if (fuel > maxFuel)
+                fuel = maxFuel;
+        }
+
+
+
             float ax = 0;
             float ay = 0;
 
-            // Calculate gravitational attraction from every planet
+            // Calculating gravitational attraction from every planet
             for (int i = 0; i < planetCount; i++) {
 
                 float dx = planets[i].x - position.x;
@@ -100,7 +172,9 @@ if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
                     ay += (dy / distance) * acceleration;
                 }
             }
-
+            if(position.x<0 || position.x>1400 || position.y<0 || position.y>800){
+                 outsideMap = true;
+            }
             // Move only if no collision has occurred
             if (!gameOver) {
                 
@@ -144,31 +218,33 @@ if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
                 }
             }
         }
-        // Restart after winning or losing
-if ((gameOver || destinationReached) && IsKeyPressed(KEY_R)) {
+        // Restarting after winning or losing
+if ((gameOver || destinationReached || outsideMap) && IsKeyPressed(KEY_R)) {
     position = start;
     velocity = {60, 0};
+    fuel = 100.0f;
 
     gameOver = false;
     destinationReached = false;
+    outsideMap = false;
 }
         // Drawing
         BeginDrawing();
         ClearBackground(BLACK);
 
-        // Draw a simple dotted route from start to destination
+        // Drawing a simple dotted route from start to destination
         for (int x = (int)start.x;
              x < (int)destination.x; x += 40) {
             DrawCircle(x, (int)start.y, 2, DARKGRAY);
         }
 
-        // Draw the starting point
+        // Drawing the starting point
         DrawCircleV(start, 20, DARKGREEN);
         DrawCircleV(start, 12, GREEN);
         DrawText("START", (int)start.x - 30,
                  (int)start.y + 30, 20, GREEN);
 
-        // Draw the destination
+        // Drawing the destination
         DrawCircleLines((int)destination.x,
                         (int)destination.y,
                         destinationRadius + 12, GOLD);
@@ -180,7 +256,7 @@ if ((gameOver || destinationReached) && IsKeyPressed(KEY_R)) {
                  (int)destination.x - 65,
                  (int)destination.y + 50, 20, GOLD);
 
-        // Draw all planets and their labels
+        // Drawing all planets and their labels
         for (int i = 0; i < planetCount; i++) {
             Color planetColor;
 
@@ -191,7 +267,7 @@ if ((gameOver || destinationReached) && IsKeyPressed(KEY_R)) {
             } else if (i == 2) {
                 planetColor = PURPLE;
             } else if (i == 3) {
-                planetColor = ORANGE;
+                planetColor = DARKBLUE;
             } else if (i == 4) {
                 planetColor = RED;
             } else {
@@ -217,10 +293,40 @@ if ((gameOver || destinationReached) && IsKeyPressed(KEY_R)) {
             );
         }
 
-        // Draw the moving object
-        DrawCircleV(position, objectRadius, RED);
-        DrawCircleLines((int)position.x, (int)position.y,
-                        objectRadius + 3, ORANGE);
+        // ******Health bar*******
+        DrawText("HULL INTEGRITY", 20, 600, 18, WHITE);
+
+        DrawRectangle(20, 625, 200, 18, DARKGRAY);
+
+        float healthWidth = 200.0f * (health / maxHealth);
+
+        Color healthColor = GREEN;
+
+        if (health < 60.0f)
+            healthColor = ORANGE;
+
+        if (health < 30.0f)
+            healthColor = RED;
+
+        DrawRectangle(20, 625, (int)healthWidth, 18, healthColor);
+
+
+        //                         ******Fuel bar*******
+        DrawText("THRUSTER FUEL", 20, 660, 18, WHITE);
+
+        DrawRectangle(20, 685, 200, 18, DARKGRAY);
+
+        float fuelWidth = 200.0f * (fuel / maxFuel);
+
+        Color fuelColor = GOLD;
+
+        if (fuel < 30.0f)
+            fuelColor = RED;
+
+        DrawRectangle(20, 685, (int)fuelWidth, 18, fuelColor);
+
+        // Drawing the moving object
+        DrawSpaceship(position, objectRadius * 2);
 
         // Display current speed
         float speed = sqrtf(
@@ -229,7 +335,7 @@ if ((gameOver || destinationReached) && IsKeyPressed(KEY_R)) {
         );
 
         DrawText(
-            TextFormat("Speed: %.1f", speed),
+            TextFormat("Speed: %.1f MPH", speed),
             20, 20, 22, WHITE
         );
 
@@ -271,6 +377,35 @@ if ((gameOver || destinationReached) && IsKeyPressed(KEY_R)) {
                 24,
                 WHITE
             );
+
+
+            // Restart prompt
+
+
+            float restartPulse = sinf((float)GetTime() * 3.0f);
+            Color restartColor = restartPulse > 0 ? GOLD : WHITE;
+
+            const char *restartMessage = "PRESS R TO RESTART";
+            int restartWidth = MeasureText(restartMessage, 22);
+
+            DrawRectangle(
+                (screenWidth - restartWidth) / 2 - 20,
+                screenHeight / 2 + 75,
+                restartWidth + 40,
+                42,
+                (Color){30, 30, 30, 200}
+            );
+
+            DrawText(
+                restartMessage,
+                (screenWidth - restartWidth) / 2,
+                screenHeight / 2 + 85,
+                22,
+                restartColor
+            );
+
+
+
         }
 
         // Destination reached message
@@ -290,7 +425,96 @@ if ((gameOver || destinationReached) && IsKeyPressed(KEY_R)) {
                 45,
                 GREEN
             );
+
+
+            // Restart prompt
+
+
+            float restartPulse = sinf((float)GetTime() * 3.0f);
+            Color restartColor = restartPulse > 0 ? GOLD : WHITE;
+
+            const char *restartMessage = "PRESS R TO RESTART";
+            int restartWidth = MeasureText(restartMessage, 22);
+
+            DrawRectangle(
+                (screenWidth - restartWidth) / 2 - 20,
+                screenHeight / 2 + 45,
+                restartWidth + 40,
+                42,
+                (Color){30, 30, 30, 200}
+            );
+
+            DrawText(
+                restartMessage,
+                (screenWidth - restartWidth) / 2,
+                screenHeight / 2 + 55,
+                22,
+                restartColor
+            );
         }
+
+        //Spaceship going outside the map message
+        if(outsideMap){
+            float pulse = sinf((float)GetTime() * 5.0f);
+
+            int fontSize = 45 + (int)(8 * (1.0f + pulse));
+            Color alertColor = pulse > 0 ? RED : ORANGE;
+
+            DrawRectangle(
+                0, 0, screenWidth, screenHeight,
+                (Color){0, 0, 0, 180}
+            );
+
+            const char *message = "GAME OVER";
+            int textWidth = MeasureText(message, fontSize);
+
+            DrawText(
+                message,
+                (screenWidth - textWidth) / 2,
+                screenHeight / 2 - 50,
+                fontSize,
+                alertColor
+            );
+
+            const char *subtitle = "You went outside the map!";
+            int subtitleWidth = MeasureText(subtitle, 24);
+
+            DrawText(
+                subtitle,
+                (screenWidth - subtitleWidth) / 2,
+                screenHeight / 2 + 25,
+                24,
+                LIME
+            );
+
+
+            // Restart prompt
+
+
+            float restartPulse = sinf((float)GetTime() * 3.0f);
+            Color restartColor = restartPulse > 0 ? GOLD : WHITE;
+
+            const char *restartMessage = "PRESS R TO RESTART";
+            int restartWidth = MeasureText(restartMessage, 22);
+
+            DrawRectangle(
+                (screenWidth - restartWidth) / 2 - 20,
+                screenHeight / 2 + 75,
+                restartWidth + 40,
+                42,
+                (Color){30, 30, 30, 200}
+            );
+
+            DrawText(
+                restartMessage,
+                (screenWidth - restartWidth) / 2,
+                screenHeight / 2 + 85,
+                22,
+                restartColor
+            );
+
+        }
+
 
         EndDrawing();
     }
